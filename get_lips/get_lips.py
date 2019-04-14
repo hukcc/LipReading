@@ -17,7 +17,7 @@ detector = dlib.get_frontal_face_detector() #获取人脸分类器
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 cnt = 0 #count videos
 while(1):
-    videos_path = file_name("s1")
+    videos_path = file_name("testvideo")
     if cnt >= len(videos_path) :
         print ("no more videos!")
         break
@@ -26,9 +26,13 @@ while(1):
     pics_num = 0    #count frames
 ########################################################To write lip images as video#######################################
     
-    # fps = cap.get(cv2.CAP_PROP_FPS)  
+    fps = cap.get(cv2.CAP_PROP_FPS)  
     # size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    # video_saver = cv2.VideoWriter("test",cv2.cv2.CAP_PROP_FOURCC('M', 'J', 'P', 'G'),fps,size)
+    size = (100, 50)
+    fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
+    video_saver = cv2.VideoWriter('test.avi' , fourcc, fps, size)
+    
+    # video_saver = cv2.VideoWriter('oto_other.mp4', cv2.cv2.CV_FOURCC('M', 'J', 'P', 'G'), fps, size)
     #still have some problem on this
 ############################################################################################################################
     while(1):
@@ -54,17 +58,24 @@ while(1):
                         top    = point[0,1]
                     if point[0,1] > bottle :
                         bottle = point[0,1]
-                    cv2.circle(img, pos, 1, color=(0, 255, 0))
+                    # cv2.circle(img, pos, 1, color=(0, 255, 0))    # common to train model
             w_offset = (right-left)//4
             h_offset = (bottle-top)//2
-            cv2.rectangle(img,(left-w_offset,top-h_offset),(right+w_offset,bottle+h_offset),(0,0,255),3)
-            liproi = img[top-h_offset:bottle+h_offset,left-w_offset:right+w_offset]
+            ####################################used by defuat#####################################################
+            # cv2.rectangle(img,(left-w_offset,top-h_offset),(right+w_offset,bottle+h_offset),(0,0,255),3)    # to suit train model
+            # liproi = img[top-h_offset:bottle+h_offset,left-w_offset:right+w_offset]
+            #######################to suit train model######################################
+            liproi = img[int((top+bottle)/2-25):int((top+bottle)/2+25), int((left+right)/2-50) : int((left+right)/2+50) ]  # (3, 50, 100)
+            print(int((top+bottle)/2-25), int((top+bottle)/2+25), int((left+right)/2-50), int((left+right)/2+50))
+            ################################################################################
+            
             #print ((left-w_offset,top-h_offset),(right+w_offset,bottle+h_offset))
         
-        #video_saver.write(img)           #write video
-        cv2.imwrite("pics/"+str(cnt)+"/"+str(pics_num)+".jpg",liproi) 
-        print (cnt , pics_num)
+        video_saver.write(liproi)           #write video
+        # cv2.imwrite("pics/"+str(cnt)+"/"+str(pics_num)+".jpg",liproi) 
+        # print (cnt , pics_num)
         pics_num = pics_num + 1
-        cv2.imshow("", img)
+        # cv2.imshow("", img)
         cv2.imshow("lip",liproi)
-        cv2.waitKey(1)
+        # cv2.waitKey(1)
+        cv2.waitKey(int(1000/int(fps) ) )
